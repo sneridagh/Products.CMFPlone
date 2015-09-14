@@ -62,8 +62,6 @@
    <element value="Image"/>
    <element value="File"/>
   </property>
-  <property name="external_links_open_new_window"
-     type="string">false</property>
   <property name="mark_special_links" type="string">false</property>
   <property name="redirect_links" type="boolean">True</property>
  </object>
