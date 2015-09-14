@@ -25,6 +25,9 @@ Changelog
 - provide positive number validator
   [vangheem]
 
+- Move external_links_open_new_window to the registry.
+  [esteele]
+
 - Remove invalid_ids portal property as it isn't used.
   [esteele]
 
