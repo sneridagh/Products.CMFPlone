@@ -1,7 +1,7 @@
 from borg.localrole.interfaces import IFactoryTempFolder
 from Products.CMFPlone.interfaces import IPatternsSettings
 from Products.CMFPlone.interfaces import ITinyMCESchema
-from Products.CMFPlone.interfaces import ISiteSchema
+from Products.CMFPlone.interfaces import ILinkSchema
 from zope.interface import implements
 from plone.registry.interfaces import IRegistry
 from zope.component import getUtility
@@ -170,18 +170,14 @@ class PloneSettingsAdapter(object):
 
     def mark_special_links(self):
         result = {}
-        properties = getToolByName(self.context, "portal_properties")
-        props = getattr(properties, 'site_properties')
 
         registry = getUtility(IRegistry)
         settings = registry.forInterface(
-            ISiteSchema, prefix="plone", check=False)
+            ILinkSchema, prefix="plone", check=False)
 
-        if not props:
-            return result
-        msl = props.getProperty('mark_special_links', 'false')
+        msl = settings.mark_special_links
         elonw = settings.external_links_open_new_window
-        if msl == 'true' or elonw == 'true':
+        if msl or elonw:
             result = {'data-pat-markspeciallinks':
                       ('{"external_links_open_new_window": "%s",'
                        '"mark_special_links": "%s"}' % (elonw, msl))}

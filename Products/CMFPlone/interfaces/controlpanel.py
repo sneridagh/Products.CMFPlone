@@ -1336,3 +1336,9 @@ class ILinkSchema(Interface):
         description=_(u''),
         default=False,
         required=False)
+
+    mark_special_links = schema.Bool(
+        title=_(u'Mark special links'),
+        description=_(u'Marks external or special protocol links with class.'),
+        default=True,
+        required=False)
