@@ -847,6 +847,17 @@ class INavigationSchema(Interface):
         default=True,
         required=False)
 
+    root = schema.TextLine(
+        title=_(
+            u"Root"),
+        description=_(
+            u"Path to be used as navigation root, relative to Plone site root."
+            u"Starts with '/'"
+        ),
+        default=u'/',
+        required=True
+    )
+
 
 class ISearchSchema(Interface):
 

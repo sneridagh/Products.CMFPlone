@@ -16,6 +16,7 @@ Changelog
 
 - remove unused code to create NavTree probably left from Plone 3.0 times 
   and since a while handled by plone.app.portlets.
+- add navigation root registry value
   [jensens]
 
 - Implement new feed syndication using `NewsML 1 <http://iptc.org/standards/newsml-1/>`_,
