@@ -55,9 +55,6 @@
   </property>
   <property name="search_results_description_length" type="int">160</property>
   <property name="ellipsis" type="string">...</property>
-  <property name="typesLinkToFolderContentsInFC" type="lines">
-   <element value="Folder"/>
-  </property>
   <property name="typesUseViewActionInListings" type="lines">
    <element value="Image"/>
    <element value="File"/>
