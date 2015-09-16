@@ -1100,6 +1100,19 @@ class IDateAndTimeSchema(Interface):
 class ITypesSchema(Interface):
     """
     """
+    types_link_to_folder_contents = schema.Tuple(
+        title=_(u'Types linking to folder contents in folder contents view'),
+        description=_(
+            u"help_types_link_to_folder_contents",
+            default=u"When clicking items in folder contents view, these "
+                    u"types will display their contents instead of using "
+                    u"their default view."),
+        required=False,
+        default=('Folder',),
+        value_type=schema.Choice(
+            vocabulary="plone.app.vocabularies.AllowableContentTypes"
+        )
+    )
 
 
 class IMailSchema(Interface):
