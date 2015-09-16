@@ -59,6 +59,5 @@
    <element value="Image"/>
    <element value="File"/>
   </property>
-  <property name="redirect_links" type="boolean">True</property>
  </object>
 </object>

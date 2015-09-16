@@ -425,9 +425,9 @@ class TestPortalCreation(PloneTestCase.PloneTestCase, WarningInterceptor):
         self.assertTrue('plone.enable_livesearch' in registry)
 
     def testRedirectLinksProperty(self):
-        self.assertTrue(self.properties.site_properties \
-            .hasProperty('redirect_links'))
-        self.assertEqual(True, self.properties.site_properties.redirect_links)
+        registry = getUtility(IRegistry)
+        self.assertTrue('plone.redirect_links' in registry)
+        self.assertEqual(True, registry['plone.redirect_links'])
 
     def testLinkDefaultView(self):
         self.assertEqual(self.types.Link.default_view, 'link_redirect_view')

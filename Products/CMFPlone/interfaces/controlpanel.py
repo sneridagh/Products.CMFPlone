@@ -1114,6 +1114,17 @@ class ITypesSchema(Interface):
         )
     )
 
+    redirect_links = schema.Bool(
+        title=_(u"Redirect links"),
+        description=_(
+            u"help_redirect_links",
+            default=u"When clicking on a Link type, should the user be "
+                    u"taken to the default view or be redirected to the "
+                    u"Link's URL?"),
+        required=False,
+        default=True
+    )
+
 
 class IMailSchema(Interface):
 

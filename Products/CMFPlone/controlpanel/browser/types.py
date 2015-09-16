@@ -187,9 +187,8 @@ class TypesControlPanel(AutoExtensibleForm, form.EditForm):
                 site_settings.types_not_searched = tuple(blacklisted)
 
                 redirect_links = form.get('redirect_links', False)
-                site_properties.manage_changeProperties(
-                    redirect_links=redirect_links
-                )
+                type_settings = registry.forInterface(ITypesSchema, prefix="plone")
+                type_settings.redirect_links = redirect_links
 
             # Update workflow
             if self.have_new_workflow() \
@@ -319,11 +318,11 @@ class TypesControlPanel(AutoExtensibleForm, form.EditForm):
         return (self.type_id not in blacklisted)
 
     def is_redirect_links_enabled(self):
-        context = aq_inner(self.context)
-        portal_properties = getToolByName(context, 'portal_properties')
-        site_props = portal_properties.site_properties
-        return self.type_id == 'Link' \
-            and site_props.getProperty('redirect_links') or False
+        if self.type_id == 'Link':
+            registry = getUtility(IRegistry)
+            settings = registry.forInterface(ITypesSchema, prefix="plone")
+            return settings.redirect_links
+        return False
 
     @memoize
     def current_workflow(self):
