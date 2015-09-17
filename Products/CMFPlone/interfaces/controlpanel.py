@@ -1125,6 +1125,21 @@ class ITypesSchema(Interface):
         ),
     )
 
+    types_use_view_action_in_listings = schema.Tuple(
+        title=_(u'Types which use the view action in listing views.'),
+        description=_(
+            u"help_types_use_view_action_in_listings",
+            default=u"When clicking items in listing views, these "
+                    u"types will use the '/view' action instead of using "
+                    u"their default view."),
+        required=False,
+        default=('Image',
+                 'File'),
+        value_type=schema.Choice(
+            source="plone.app.vocabularies.PortalTypes"
+        ),
+    )
+
     redirect_links = schema.Bool(
         title=_(u"Redirect links"),
         description=_(
