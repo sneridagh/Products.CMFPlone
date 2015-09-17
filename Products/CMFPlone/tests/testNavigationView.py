@@ -629,15 +629,9 @@ class TestBasePortalTabs(PloneTestCase.PloneTestCase):
 
     def testRootBelowPortalRoot(self):
         self.setRoles(['Manager'])
-        self.portal.folder1.invokeFactory('Document', 'doc1')
-        self.portal.folder1.invokeFactory('Document', 'doc2')
-        self.portal.folder1.invokeFactory('Document', 'doc3')
-        self.portal.folder1.invokeFactory('Folder', 'folder1')
-        self.portal.folder1.invokeFactory('Folder', 'folder2')
+        self.portal.manage_delObjects(['news', 'events', 'Members'])
         self.setRoles(['Member'])
-
         self.navigation_settings.nonfolderish_tabs = False
-
         view = self.view_class(self.portal, self.request)
         tabs = view.topLevelTabs(actions=[])
         self.assertTrue(tabs)
