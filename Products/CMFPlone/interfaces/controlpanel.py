@@ -1145,7 +1145,7 @@ class IDateAndTimeSchema(Interface):
 class ITypesSchema(Interface):
     """
     """
-    types_link_to_folder_contents = schema.Tuple(
+    types_link_to_folder_contents = schema.List(
         title=_(u'Types linking to folder contents in folder contents view'),
         description=_(
             u"help_types_link_to_folder_contents",
@@ -1153,13 +1153,11 @@ class ITypesSchema(Interface):
                     u"types will display their contents instead of using "
                     u"their default view."),
         required=False,
-        default=('Folder',),
-        value_type=schema.Choice(
-            source="plone.app.vocabularies.PortalTypes"
-        ),
+        default=[u'Folder'],
+        value_type=schema.TextLine()
     )
 
-    types_use_view_action_in_listings = schema.Tuple(
+    types_use_view_action_in_listings = schema.List(
         title=_(u'Types which use the view action in listing views.'),
         description=_(
             u"help_types_use_view_action_in_listings",
@@ -1167,11 +1165,9 @@ class ITypesSchema(Interface):
                     u"types will use the '/view' action instead of using "
                     u"their default view."),
         required=False,
-        default=('Image',
-                 'File'),
-        value_type=schema.Choice(
-            source="plone.app.vocabularies.PortalTypes"
-        ),
+        default=[u'Image',
+                 u'File'],
+        value_type=schema.TextLine(),
     )
 
     redirect_links = schema.Bool(
