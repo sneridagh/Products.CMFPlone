@@ -398,11 +398,6 @@ class TestPortalCreation(PloneTestCase.PloneTestCase, WarningInterceptor):
         # portal_memberdata should have a location property
         self.assertEqual(self.memberdata.getProperty('ext_editor'), 0)
 
-    def testTypesUseViewActionInListingsProperty(self):
-        # site_properties should have the typesUseViewActionInListings property
-        self.assertTrue(self.properties.site_properties.hasProperty(
-                            'typesUseViewActionInListings'))
-
     def testSiteSetupActionIsPresent(self):
         actions = self.actions.listActions()
         self.assertEqual(
