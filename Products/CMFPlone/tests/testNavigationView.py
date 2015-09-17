@@ -1,19 +1,17 @@
-from zope.component import getUtility
-from zope.interface import directlyProvides
+# -*- coding: utf-8 -*-
 from plone.registry.interfaces import IRegistry
-from Products.CMFPlone.interfaces import INavigationSchema
-
-from Products.CMFPlone.tests import PloneTestCase
-from Products.CMFPlone.tests import dummy
-from Products.CMFPlone.tests.utils import validateCSSIdentifier
-from Products.CMFPlone.tests.utils import folder_position
-
-#from Products.CMFPlone.browser.navigation import CatalogNavigationTree
-from Products.CMFPlone.browser.navigation import CatalogSiteMap
-from Products.CMFPlone.browser.navigation import CatalogNavigationTabs
 from Products.CMFPlone.browser.navigation import CatalogNavigationBreadcrumbs
+from Products.CMFPlone.browser.navigation import CatalogNavigationTabs
+from Products.CMFPlone.browser.navigation import CatalogSiteMap
 from Products.CMFPlone.browser.navigation import PhysicalNavigationBreadcrumbs
 from Products.CMFPlone.interfaces import IHideFromBreadcrumbs
+from Products.CMFPlone.interfaces import INavigationSchema
+from Products.CMFPlone.tests import dummy
+from Products.CMFPlone.tests import PloneTestCase
+from Products.CMFPlone.tests.utils import folder_position
+from Products.CMFPlone.tests.utils import validateCSSIdentifier
+from zope.component import getUtility
+from zope.interface import directlyProvides
 
 portal_name = PloneTestCase.portal_name
 
@@ -29,6 +27,11 @@ class TestBaseNavTree(PloneTestCase.PloneTestCase):
         self.request = self.app.REQUEST
         self.populateSite()
         self.setupAuthenticator()
+        registry = getUtility(IRegistry)
+        self.navigaton_settings = registry.forInterface(
+            INavigationSchema,
+            prefix='plone'
+        )
 
     def populateSite(self):
         self.setRoles(['Manager'])
@@ -130,8 +133,11 @@ class TestBaseNavTree(PloneTestCase.PloneTestCase):
         tree = view.navigationTree()
         self.assertTrue(tree)
         # Ensure that our 'doc21' default page is not in the tree.
-        self.assertEqual([c for c in tree['children'][-1]['children']
-                             if c['item'].getPath()[-5:] == 'doc21'], [])
+        self.assertEqual(
+            [c for c in tree['children'][-1]['children']
+             if c['item'].getPath()[-5:] == 'doc21'],
+            []
+        )
 
     def testNavTreeMarksParentMetaTypesNotToQuery(self):
         # Make sure that items whose ids are in the idsNotToList navTree
@@ -153,8 +159,10 @@ class TestBaseNavTree(PloneTestCase.PloneTestCase):
             if child['portal_type'] != 'Link':
                 self.assertFalse(child['item'].getRemoteUrl)
             if child['Title'] == 'link1':
-                self.assertEqual(child['item'].getRemoteUrl,
-                                     'http://plone.org')
+                self.assertEqual(
+                    child['item'].getRemoteUrl,
+                    'http://plone.org'
+                )
 
     def testNonStructuralFolderHidesChildren(self):
         # Make sure NonStructuralFolders act as if parentMetaTypesNotToQuery
@@ -167,8 +175,10 @@ class TestBaseNavTree(PloneTestCase.PloneTestCase):
         ntp.manage_changeProperties(root='/Members/test_user_1_')
         view = self.view_class(self.folder.ns_folder, self.request)
         tree = view.navigationTree()
-        self.assertEqual(tree['children'][0]['item'].getPath(),
-                                '/plone/Members/test_user_1_/ns_folder')
+        self.assertEqual(
+            tree['children'][0]['item'].getPath(),
+            '/plone/Members/test_user_1_/ns_folder'
+        )
         self.assertEqual(len(tree['children'][0]['children']), 0)
 
     def testTopLevel(self):
@@ -324,14 +334,14 @@ class TestBaseNavTree(PloneTestCase.PloneTestCase):
         tree = view.navigationTree()
         self.assertTrue(tree)
         self.assertTrue('children' in tree)
-        #Should only contain current object
+        # Should only contain current object
         self.assertEqual(len(tree['children']), 1)
-        #change workflow for folder1
+        # change workflow for folder1
         workflow.doActionFor(self.portal.folder1, 'publish')
         self.portal.folder1.reindexObject()
         view = self.view_class(self.portal.folder2, self.request)
         tree = view.navigationTree()
-        #Should only contain current object and published folder
+        # Should only contain current object and published folder
         self.assertEqual(len(tree['children']), 2)
 
     def testStateFiltering(self):
@@ -341,23 +351,20 @@ class TestBaseNavTree(PloneTestCase.PloneTestCase):
         self.portal._delObject('events')
         workflow = self.portal.portal_workflow
 
-        registry = getUtility(IRegistry)
-        settings = registry.forInterface(INavigationSchema, prefix='plone')
-
-        settings.workflow_states_to_show = ('published',)
-        settings.filter_on_workflow = True
+        self.navigation_settings.workflow_states_to_show = ('published',)
+        self.navigation_settings.filter_on_workflow = True
         view = self.view_class(self.portal.folder2, self.request)
         tree = view.navigationTree()
         self.assertTrue(tree)
         self.assertTrue('children' in tree)
-        #Should only contain current object
+        # Should only contain current object
         self.assertEqual(len(tree['children']), 1)
-        #change workflow for folder1
+        # change workflow for folder1
         workflow.doActionFor(self.portal.folder1, 'publish')
         self.portal.folder1.reindexObject()
         view = self.view_class(self.portal.folder2, self.request)
         tree = view.navigationTree()
-        #Should only contain current object and published folder
+        # Should only contain current object and published folder
         self.assertEqual(len(tree['children']), 2)
 
 
@@ -516,16 +523,13 @@ class TestBasePortalTabs(PloneTestCase.PloneTestCase):
         # See if we can create one at all
         view = self.view_class(self.portal, self.request)
 
-        #Everything shows up by default
+        # Everything shows up by default
         tabs = view.topLevelTabs(actions=[])
         self.assertTrue(tabs)
         self.assertEqual(len(tabs), 8)
 
-        #Only the folders show up (Members, news, events, folder1, folder2)
-        registry = getUtility(IRegistry)
-        navigation_settings = registry.forInterface(INavigationSchema,
-                                                    prefix="plone")
-        navigation_settings.nonfolderish_tabs = False
+        # Only the folders show up (Members, news, events, folder1, folder2)
+        self.navigation_settings.nonfolderish_tabs = False
         tabs = view.topLevelTabs(actions=[])
         self.assertEqual(len(tabs), 5)
 
@@ -538,9 +542,9 @@ class TestBasePortalTabs(PloneTestCase.PloneTestCase):
         folder_position(self.portal, 'up', 'folder2')
         view = self.view_class(self.portal, self.request)
         tabs2 = view.topLevelTabs(actions=[])
-        #Same number of objects
+        # Same number of objects
         self.assertEqual(len(tabs1), len(tabs2))
-        #Different order
+        # Different order
         self.assertTrue(tabs1 != tabs2)
 
     def testCustomQuery(self):
@@ -558,14 +562,14 @@ class TestBasePortalTabs(PloneTestCase.PloneTestCase):
             self.portal.getCustomNavQuery(), {"review_state": "published"})
         view = self.view_class(self.portal, self.request)
         tabs = view.topLevelTabs(actions=[])
-        #Should contain no folders
+        # Should contain no folders
         self.assertEqual(len(tabs), 0)
-        #change workflow for folder1
+        # change workflow for folder1
         workflow.doActionFor(self.portal.folder1, 'publish')
         self.portal.folder1.reindexObject()
         view = self.view_class(self.portal, self.request)
         tabs = view.topLevelTabs(actions=[])
-        #Should only contain the published folder
+        # Should only contain the published folder
         self.assertEqual(len(tabs), 1)
 
     def testStateFiltering(self):
@@ -575,34 +579,24 @@ class TestBasePortalTabs(PloneTestCase.PloneTestCase):
         self.portal._delObject('events')
         workflow = self.portal.portal_workflow
 
-        registry = getUtility(IRegistry)
-        navigation_settings = registry.forInterface(
-            INavigationSchema,
-            prefix="plone"
-        )
-        navigation_settings.workflow_states_to_show = ('published',)
-        navigation_settings.filter_on_workflow = True
+        self.navigation_settings.workflow_states_to_show = ('published',)
+        self.navigation_settings.filter_on_workflow = True
         view = self.view_class(self.portal, self.request)
         tabs = view.topLevelTabs(actions=[])
-        #Should contain no folders
+        # Should contain no folders
         self.assertEqual(len(tabs), 0)
-        #change workflow for folder1
+        # change workflow for folder1
         workflow.doActionFor(self.portal.folder1, 'publish')
         self.portal.folder1.reindexObject()
         view = self.view_class(self.portal, self.request)
         tabs = view.topLevelTabs(actions=[])
-        #Should only contain the published folder
+        # Should only contain the published folder
         self.assertEqual(len(tabs), 1)
 
     def testDisableFolderTabs(self):
         # Setting the site_property disable_folder_sections should remove
         # all folder based tabs
-        registry = getUtility(IRegistry)
-        navigation_settings = registry.forInterface(
-            INavigationSchema,
-            prefix="plone"
-        )
-        navigation_settings.generate_tabs = False
+        self.navigation_settings.generate_tabs = False
         view = self.view_class(self.portal, self.request)
         tabs = view.topLevelTabs(actions=[])
         self.assertEqual(tabs, [])
@@ -655,10 +649,7 @@ class TestBasePortalTabs(PloneTestCase.PloneTestCase):
         self.assertFalse('folder2' in tab_names)
 
     def testTabsExcludeNonFolderishItems(self):
-        registry = getUtility(IRegistry)
-        navigation_settings = registry.forInterface(INavigationSchema,
-                                                    prefix="plone")
-        navigation_settings.nonfolderish_tabs = False
+        self.navigation_settings.nonfolderish_tabs = False
         view = self.view_class(self.portal, self.request)
         tabs = view.topLevelTabs(actions=[])
         orig_len = len(tabs)
@@ -679,12 +670,7 @@ class TestBasePortalTabs(PloneTestCase.PloneTestCase):
         self.portal.folder1.invokeFactory('Folder', 'folder2')
         self.setRoles(['Member'])
 
-        self.portal.portal_properties.navtree_properties.root = '/folder1'
-
-        registry = getUtility(IRegistry)
-        navigation_settings = registry.forInterface(INavigationSchema,
-                                                    prefix="plone")
-        navigation_settings.nonfolderish_tabs = False
+        self.navigation_settings.nonfolderish_tabs = False
 
         view = self.view_class(self.portal, self.request)
         tabs = view.topLevelTabs(actions=[])
