@@ -592,7 +592,7 @@ class TestBasePortalTabs(PloneTestCase.PloneTestCase):
         self.assertFalse('folder2' in tab_names)
 
     def testTabsRespectsTypesWithViewAction(self):
-        # With a type in typesUseViewActionInListings as current action it
+        # With a type in types_use_view_action_in_listings as current action it
         # should return a tab which has '/view' appended to the url
         view = self.view_class(self.portal, self.request)
         tabs = view.topLevelTabs(actions=[])
@@ -709,7 +709,7 @@ class TestBaseBreadCrumbs(PloneTestCase.PloneTestCase):
                          doc.aq_parent.absolute_url())
 
     def testBreadcrumbsRespectTypesWithViewAction(self):
-        # With a type in typesUseViewActionInListings as current action it
+        # With a type in types_use_view_action_in_listings as current action it
         # should return a breadcrumb which has '/view' appended to the url
         view = self.view_class(self.portal.folder1.file11, self.request)
         crumbs = view.breadcrumbs()

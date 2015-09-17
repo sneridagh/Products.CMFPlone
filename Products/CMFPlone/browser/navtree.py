@@ -116,13 +116,11 @@ class SitemapNavtreeStrategy(NavtreeStrategyBase):
         self.portal = portal_url.getPortalObject()
         portal_properties = getToolByName(context, 'portal_properties')
         navtree_properties = getattr(portal_properties, 'navtree_properties')
-        site_properties = getattr(portal_properties, 'site_properties')
         self.parentTypesNQ = \
             navtree_properties.getProperty('parentMetaTypesNotToQuery', ())
-        self.viewActionTypes = site_properties.getProperty(
-            'typesUseViewActionInListings',
-            ()
-        )
+        registry = getUtility(IRegistry)
+        self.viewActionTypes = registry.get(
+            'plone.types_view_action_in_listings', [])
 
         self.showAllParents = navtree_properties.getProperty(
             'showAllParents',
