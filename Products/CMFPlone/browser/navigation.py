@@ -41,12 +41,8 @@ def get_id(item):
 
 def get_view_url(context):
     registry = getUtility(IRegistry)
-    site_settings = registry.forInterface(
-        ITypesSchema,
-        prefix="plone",
-        check=False
-    )
-    view_action_types = site_settings.types_use_view_action_in_listings
+    view_action_types = registry.get(
+        'plone.types_use_view_action_in_listings', [])
     item_url = get_url(context)
     name = get_id(context)
 

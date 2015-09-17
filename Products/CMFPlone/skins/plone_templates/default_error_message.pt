@@ -61,7 +61,8 @@
                                              similar_items redirection_view/search_for_similar;
                                              plone_view context/@@plone;
                                              site_properties context/portal_properties/site_properties;
-                                             use_view_action site_properties/typesUseViewActionInListings|python:();
+                                             registry context/portal_registry;
+                                             use_view_action python:registry.get('plone.types_use_view_action_in_listings', ());
                                              desc_length site_properties/search_results_description_length;
                                              desc_ellipsis site_properties/ellipsis;
                                              normalizeString nocall:plone_view/normalizeString;"
