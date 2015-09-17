@@ -72,33 +72,29 @@ class CatalogSiteMap(BrowserView):
 class CatalogNavigationTabs(BrowserView):
 
     def _getNavQuery(self):
-        context = self.context
-        navtree_properties = self.navtree_properties
-
-        customQuery = getattr(context, 'getCustomNavQuery', False)
-        if customQuery is not None and utils.safe_callable(customQuery):
-            query = customQuery()
-        else:
-            query = {}
-
-        rootPath = getNavigationRoot(context)
-        query['path'] = {'query': rootPath, 'depth': 1}
-
+                # check whether we only want actions
         registry = getUtility(IRegistry)
         navigation_settings = registry.forInterface(
             INavigationSchema,
             prefix="plone",
             check=False
         )
-        displayed_types = navigation_settings.displayed_types
-        query['portal_type'] = [t for t in displayed_types]
+        customQuery = getattr(self.context, 'getCustomNavQuery', False)
+        if customQuery is not None and utils.safe_callable(customQuery):
+            query = customQuery()
+        else:
+            query = {}
 
-        sortAttribute = navtree_properties.getProperty('sortAttribute', None)
-        if sortAttribute is not None:
-            query['sort_on'] = sortAttribute
-            sortOrder = navtree_properties.getProperty('sortOrder', None)
-            if sortOrder is not None:
-                query['sort_order'] = sortOrder
+        query['path'] = {
+            'query': getNavigationRoot(self.context),
+            'depth': 1
+        }
+        query['portal_type'] = [t for t in navigation_settings.displayed_types]
+        query['sort_on'] = navigation_settings.sort_tabs_on
+        if navigation_settings.sort_tabs_reversed:
+            query['sort_order'] = 'reverse'
+        else:
+            query['sort_order'] = 'ascending'
 
         if navigation_settings.filter_on_workflow:
             query['review_state'] = navigation_settings.workflow_states_to_show
@@ -117,8 +113,6 @@ class CatalogNavigationTabs(BrowserView):
         member = mtool.getAuthenticatedMember().id
 
         portal_properties = getToolByName(context, 'portal_properties')
-        self.navtree_properties = getattr(portal_properties,
-                                          'navtree_properties')
         self.site_properties = getattr(portal_properties,
                                        'site_properties')
         self.portal_catalog = getToolByName(context, 'portal_catalog')
@@ -151,23 +145,23 @@ class CatalogNavigationTabs(BrowserView):
 
         rawresult = self.portal_catalog.searchResults(query)
 
-        def get_link_url(item):
-            linkremote = item.getRemoteUrl and not member == item.Creator
-            if linkremote:
+        def _get_url(item):
+            if item.getRemoteUrl and not member == item.Creator:
                 return (get_id(item), item.getRemoteUrl)
-            else:
-                return False
+            return get_view_url(item)
 
         # now add the content to results
-        idsNotToList = self.navtree_properties.getProperty('idsNotToList', ())
         for item in rawresult:
-            if not (item.getId in idsNotToList or item.exclude_from_nav):
-                id, item_url = get_link_url(item) or get_view_url(item)
-                data = {'name': utils.pretty_title_or_id(context, item),
-                        'id': item.getId,
-                        'url': item_url,
-                        'description': item.Description}
-                result.append(data)
+            if item.exclude_from_nav:
+                continue
+            cid, item_url = _get_url(item)
+            data = {
+                'name': utils.pretty_title_or_id(context, item),
+                'id': item.getId,
+                'url': item_url,
+                'description': item.Description
+            }
+            result.append(data)
 
         return result
 

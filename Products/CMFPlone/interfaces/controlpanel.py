@@ -803,6 +803,40 @@ class INavigationSchema(Interface):
         default=True,
         required=False)
 
+    sort_tabs_on = schema.Choice(
+        title=_(u"Sort tabs on"),
+        description=_(
+            u"Index used to sort the tabs"
+        ),
+        required=True,
+        default=u'getObjPositionInParent',
+        vocabulary=SimpleVocabulary([
+            # there is no vocabulary of sortable indexes by now, so hard code
+            # some options here
+            SimpleTerm(
+                'getObjPositionInParent',
+                'getObjPositionInParent',
+                _(u'Position in Parent')
+            ),
+            SimpleTerm(
+                'sortable_title',
+                'sortable_title',
+                _(u'Title')
+            ),
+            SimpleTerm(
+                'getId',
+                'getId',
+                _(u'Short Name (ID)')
+            ),
+        ]),
+    )
+    sort_tabs_reversed = schema.Bool(
+        title=_(u"Reversed sort order for tabs."),
+        description=_(
+            u"Sort tabs in descending."),
+        default=False,
+        required=False)
+
     displayed_types = schema.Tuple(
         title=_(u"Displayed content types"),
         description=_(
