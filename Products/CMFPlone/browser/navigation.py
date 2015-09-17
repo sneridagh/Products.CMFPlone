@@ -13,6 +13,7 @@ from Products.CMFPlone.browser.interfaces import ISiteMap
 from Products.CMFPlone.browser.navtree import SitemapQueryBuilder
 from Products.CMFPlone.interfaces import IHideFromBreadcrumbs
 from Products.CMFPlone.interfaces import INavigationSchema
+from Products.CMFPlone.interfaces import ITypesSchema
 from Products.Five import BrowserView
 from zope.component import getMultiAdapter
 from zope.component import getUtility
@@ -39,10 +40,13 @@ def get_id(item):
 
 
 def get_view_url(context):
-    props = getToolByName(context, 'portal_properties')
-    stp = props.site_properties
-    view_action_types = stp.getProperty('typesUseViewActionInListings', ())
-
+    registry = getUtility(IRegistry)
+    site_settings = registry.forInterface(
+        ITypesSchema,
+        prefix="plone",
+        check=False
+    )
+    view_action_types = site_settings.types_use_view_action_in_listings
     item_url = get_url(context)
     name = get_id(context)
 
@@ -61,11 +65,12 @@ class CatalogSiteMap(BrowserView):
 
         queryBuilder = SitemapQueryBuilder(context)
         query = queryBuilder()
-
         strategy = getMultiAdapter((context, self), INavtreeStrategy)
 
-        return buildFolderTree(context, obj=context,
-                               query=query, strategy=strategy)
+        return buildFolderTree(
+            context, obj=context,
+            query=query, strategy=strategy
+        )
 
 
 @implementer(INavigationTabs)
@@ -108,42 +113,39 @@ class CatalogNavigationTabs(BrowserView):
 
     def topLevelTabs(self, actions=None, category='portal_tabs'):
         context = aq_inner(self.context)
-
-        mtool = getToolByName(context, 'portal_membership')
-        member = mtool.getAuthenticatedMember().id
-
-        portal_properties = getToolByName(context, 'portal_properties')
-        self.site_properties = getattr(portal_properties,
-                                       'site_properties')
-        self.portal_catalog = getToolByName(context, 'portal_catalog')
-
-        if actions is None:
-            context_state = getMultiAdapter((context, self.request),
-                                            name=u'plone_context_state')
-            actions = context_state.actions(category)
-
-        # Build result dict
-        result = []
-        # first the actions
-        if actions is not None:
-            for actionInfo in actions:
-                data = actionInfo.copy()
-                data['name'] = data['title']
-                result.append(data)
-
-        # check whether we only want actions
         registry = getUtility(IRegistry)
         navigation_settings = registry.forInterface(
             INavigationSchema,
             prefix="plone",
             check=False
         )
+        mtool = getToolByName(context, 'portal_membership')
+        member = mtool.getAuthenticatedMember().id
+        catalog = getToolByName(context, 'portal_catalog')
+
+        result = []
+
+        if actions is None:
+            context_state = getMultiAdapter(
+                (context, self.request),
+                name=u'plone_context_state'
+            )
+            actions = context_state.actions(category)
+
+            # Build result dict
+            # first the actions
+            for actionInfo in actions:
+                data = actionInfo.copy()
+                data['name'] = data['title']
+                result.append(data)
+
+        # check whether we only want actions
         if not navigation_settings.generate_tabs:
             return result
 
         query = self._getNavQuery()
 
-        rawresult = self.portal_catalog.searchResults(query)
+        rawresult = catalog.searchResults(query)
 
         def _get_url(item):
             if item.getRemoteUrl and not member == item.Creator:
@@ -171,19 +173,18 @@ class CatalogNavigationBreadcrumbs(BrowserView):
 
     def breadcrumbs(self):
         context = aq_inner(self.context)
-        request = self.request
-        ct = getToolByName(context, 'portal_catalog')
+        catalog = getToolByName(context, 'portal_catalog')
         query = {}
 
         # Check to see if the current page is a folder default view, if so
         # get breadcrumbs from the parent folder
-        if utils.isDefaultPage(context, request):
+        if utils.isDefaultPage(context, self.request):
             currentPath = '/'.join(utils.parent(context).getPhysicalPath())
         else:
             currentPath = '/'.join(context.getPhysicalPath())
         query['path'] = {'query': currentPath, 'navtree': 1, 'depth': 0}
 
-        rawresult = ct(**query)
+        rawresult = catalog(**query)
 
         # Sort items on path length
         dec_result = [(len(r.getPath()), r) for r in rawresult]
@@ -201,9 +202,11 @@ class CatalogNavigationBreadcrumbs(BrowserView):
             if rootPath.startswith(itemPath):
                 continue
 
-            id, item_url = get_view_url(item)
-            data = {'Title': utils.pretty_title_or_id(context, item),
-                    'absolute_url': item_url}
+            cid, item_url = get_view_url(item)
+            data = {
+                'Title': utils.pretty_title_or_id(context, item),
+                'absolute_url': item_url
+            }
             result.append(data)
         return result
 
@@ -243,8 +246,8 @@ class PhysicalNavigationBreadcrumbs(BrowserView):
            and not rootPath.startswith(itemPath):
             base += ({
                 'absolute_url': item_url,
-                'Title': utils.pretty_title_or_id(context, context), },
-            )
+                'Title': utils.pretty_title_or_id(context, context),
+            },)
         return base
 
 

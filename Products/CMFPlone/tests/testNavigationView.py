@@ -6,6 +6,7 @@ from Products.CMFPlone.browser.navigation import CatalogSiteMap
 from Products.CMFPlone.browser.navigation import PhysicalNavigationBreadcrumbs
 from Products.CMFPlone.interfaces import IHideFromBreadcrumbs
 from Products.CMFPlone.interfaces import INavigationSchema
+from Products.CMFPlone.interfaces import ITypesSchema
 from Products.CMFPlone.tests import dummy
 from Products.CMFPlone.tests import PloneTestCase
 from Products.CMFPlone.tests.utils import folder_position
@@ -375,7 +376,8 @@ class TestSiteMap(PloneTestCase.PloneTestCase):
 
     def testComplexSitemap(self):
         # create and test a reasonabley complex sitemap
-        path = lambda x: '/'.join(x.getPhysicalPath())
+        def path(x):
+            return '/'.join(x.getPhysicalPath())
         # We do this in a strange order in order to maximally demonstrate the
         # bug
         folder1 = self.portal.folder1
@@ -597,10 +599,16 @@ class TestBasePortalTabs(PloneTestCase.PloneTestCase):
         self.assertTrue(tabs)
         # Fail if 'view' is used for folder
         self.assertFalse(tabs[-1]['url'][-5:] == '/view')
-        # Add Folder to site_property
-        props = self.portal.portal_properties.site_properties
-        props.manage_changeProperties(
-            typesUseViewActionInListings=['Image', 'File', 'Folder'])
+        # Add Folder to type settings
+        registry = getUtility(IRegistry)
+        type_settings = registry.forInterface(
+            ITypesSchema,
+            prefix="plone",
+            check=False
+        )
+        type_settings.types_use_view_action_in_listings = [
+            u'Image', u'File', u'Folder'
+        ]
         # Verify that we have '/view'
         view = self.view_class(self.portal, self.request)
         tabs = view.topLevelTabs(actions=[])
